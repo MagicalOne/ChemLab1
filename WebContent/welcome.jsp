@@ -40,9 +40,117 @@ blackboard.persist.gradebook.LineitemDbPersister"
 			Welcome to to Chem 109 Choose one of the labs below.
 		</bbNG:pageTitleBar>
 	</bbNG:pageHeader>
+
+
+<p>
+<% 
+ BbList allMembershipsList =
+ sessionCourseMembershipLoader.loadByCourseId( courseId, null, true ); 
+ Collections.sort(allMembershipsList, cmSortByFamilyName); 
+ 
+ Comparator cmSortByUsername = new Comparator() {
+	 public int compare(Object o1, Object o2) {
+	 CourseMembership cm1 = (CourseMembership) o1;
+	 CourseMembership cm2 = (CourseMembership) o2;
+	 String s1 = (String)((User)cm1.getUser()).getUserName();
+	 String s2 = (String)((User)cm2.getUser()).getUserName();
+	 return s1.toLowerCase().compareTo(s2.toLowerCase());
+	 }
+	};
+
+	Comparator cmSortByFamilyName = new Comparator() {
+	 public int compare(Object o1, Object o2) {
+	 CourseMembership cm1 = (CourseMembership) o1;
+	 CourseMembership cm2 = (CourseMembership) o2;
+	 String s1 = (String)((User)cm1.getUser()).getFamilyName();
+	 String s2 = (String)((User)cm2.getUser()).getFamilyName();
+	 int compare = s1.toLowerCase().compareTo(s2.toLowerCase());
+	 if( compare == 0 ) {
+	 s1 = (String)((User)cm1.getUser()).getGivenName();
+	 s2 = (String)((User)cm2.getUser()).getGivenName();
+	 compare = s1.toLowerCase().compareTo(s2.toLowerCase());
+	 }
+	 return compare;
+	 }
+	};
+
+	Comparator cmSortByRole = new Comparator() {
+	 public int compare(Object o1, Object o2) {
+	 CourseMembership cm1 = (CourseMembership) o1;
+	 CourseMembership cm2 = (CourseMembership) o2;
+	 String s1 = getRoleString( "COURSE", (CourseMembership.Role)cm1.getRole() );
+	 String s2 = getRoleString( "COURSE", (CourseMembership.Role)cm2.getRole() );
+	 int compare = s1.toLowerCase().compareTo(s2.toLowerCase());
+	 if ( compare == 0 ) {
+	 s1 = (String)((User)cm1.getUser()).getFamilyName();
+	 s2 = (String)((User)cm2.getUser()).getFamilyName();
+	 compare = s1.toLowerCase().compareTo(s2.toLowerCase());
+	 if( compare == 0 ) {
+	 s1 = (String)((User)cm1.getUser()).getGivenName();
+	 s2 = (String)((User)cm2.getUser()).getGivenName();
+
+	 compare = s1.toLowerCase().compareTo(s2.toLowerCase());
+	 }
+	 }
+	 return compare;
+	 }
+	};
+
+	Comparator cmSortByEmailAddress = new Comparator() {
+	 public int compare(Object o1, Object o2) {
+	 CourseMembership cm1 = (CourseMembership) o1;
+	 CourseMembership cm2 = (CourseMembership) o2;
+	 String s1 = (String)((User)cm1.getUser()).getEmailAddress();
+	 String s2 = (String)((User)cm1.getUser()).getEmailAddress();
+	 return s1.toLowerCase().compareTo(s2.toLowerCase());
+	 }
+	}; 
+%>
+
+
+<bbUI:list>
+collection="<%= allMembershipsList %>"
+collectionLabel="Users"
+objectId="cm"
+className="CourseMembership">
+<bbUI:listElement width="10"></bbUI:listElement>
+
+<bbUI:listElement
+	label="Name"
+	name="Name"
+comparator="<%= cmSortByFamilyName %>">
+	<%= cm.getUser().getGivenName() %> <%= cm.getUser().getFamilyName() %>
+</bbUI:listElement>
+
+<bbUI:listElement
+	label="Username"
+	name="Username"
+	comparator="<%= cmSortByUsername %>">
+	<%= cm.getUser().getUserName() %>
+</bbUI:listElement>
+
+<bbUI:listElement
+	label="Email"
+	name="Email"
+	comparator="<%= cmSortByEmailAddress %>">
+	<%= cm.getUser().getEmailAddress() %> 
+</bbUI:listElement>
+
+<bbUI:listElement
+	label="Role"
+	name="Role"
+	comparator="<%= cmSortByRole %>">
+	<%= getRoleString( "COURSE", cm.getRole() ) %>
+</bbUI:listElement>
+
+</bbUI:list>
+
+</p> 
+	
+	
+	
   
 <% 
-
 	User u = ctx.getUser();;
 	Course c = ctx.getCourse();
 	// get the membership data to determine the User's Role
@@ -66,7 +174,11 @@ blackboard.persist.gradebook.LineitemDbPersister"
 	CourseMembership.Role crsMembershipRole = crsMembership.getRole();
 	String crsMembershipRoleStr = crsMembershipRole.toString();
 	boolean roleInstructor = false;
-//This one needs to go behind the activate button
+
+	// start of the roster
+
+
+	//This one needs to go behind the activate button
 	if (crsMembershipRole == CourseMembership.Role.INSTRUCTOR)
 	{
 		roleInstructor = true;
@@ -93,7 +205,6 @@ blackboard.persist.gradebook.LineitemDbPersister"
      <script>
         function enableButton2() {
         	document.getElementById("button2").disabled = false;
-
         	out.println("<p> test try");
 <%---		try{
          	    Lineitem assignment = new Lineitem();
@@ -104,7 +215,6 @@ blackboard.persist.gradebook.LineitemDbPersister"
         	    assignment.setType("Lab 1");
         	    assignment.setIsAvailable(true);
         	    assignment.setDateAdded();
-
         	    LineitemDbPersister linePersister = LineitemDbPersister.Default.getInstance();
         	    linePersister.persist(assignment);
         	    out.println("<p>check the gradecenter");
@@ -114,9 +224,7 @@ blackboard.persist.gradebook.LineitemDbPersister"
         	    out.println("<p>" + e.getClass().getSimpleName() + ": " + e.getMessage());
         	    out.println("<p>check the tomcat logfiles");
         	    e.printStackTrace();
-
         	  }
-
         ---%>	
         }
     </script>
@@ -128,7 +236,6 @@ blackboard.persist.gradebook.LineitemDbPersister"
 		
 		}
 	
-
 </script>
 
  <form method="post" action="${pageContext.request.contextPath}/Labs" > 
@@ -158,3 +265,5 @@ blackboard.persist.gradebook.LineitemDbPersister"
 	</html>
 
 </bbNG:learningSystemPage>
+Status API Training Shop Blog About Pricing
+© 2016 GitHub, Inc. Terms Privacy Security Contact Help
